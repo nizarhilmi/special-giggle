@@ -4,6 +4,7 @@ import (
 	"api-go-basic/data"
 	"api-go-basic/models"
 	"github.com/gin-gonic/gin"
+	"github.com/mitchellh/mapstructure"
 	"net/http"
 )
 
@@ -27,7 +28,11 @@ func CreateMovie(c *gin.Context) {
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
-	movie := models.Movie{Title: input.Title, Year: input.Year}
+	var movie models.Movie
+	if err := mapstructure.Decode(input, &movie); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	if err := store.Create(&movie); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
